@@ -1,0 +1,82 @@
+[
+  {
+    "objectID": "rag.html",
+    "href": "rag.html",
+    "title": "Retrieval Augmented Generation (RAG)",
+    "section": "",
+    "text": "RAG (Retrieval Augmented Generation) is a powerful AI architecture that combines information retrieval with text generation to produce more accurate and contextually relevant responses. It represents a significant advancement in how AI systems access and utilize knowledge.",
+    "crumbs": [
+      "Retrieval Augmented Generation (RAG)"
+    ]
+  },
+  {
+    "objectID": "rag.html#what-is-rag",
+    "href": "rag.html#what-is-rag",
+    "title": "Retrieval Augmented Generation (RAG)",
+    "section": "What is RAG",
+    "text": "What is RAG\nRAG works by:\n\nRetrieving relevant information from a knowledge base\nAugmenting the input prompt with this retrieved context\nGenerating responses using both the original prompt and retrieved information",
+    "crumbs": [
+      "Retrieval Augmented Generation (RAG)"
+    ]
+  },
+  {
+    "objectID": "rag.html#why-rag-important",
+    "href": "rag.html#why-rag-important",
+    "title": "Retrieval Augmented Generation (RAG)",
+    "section": "Why RAG Important",
+    "text": "Why RAG Important\nRAG addresses a fundamental limitation of Large Language Models (LLMs): they can’t directly answer questions about specific or up-to-date information that wasn’t part of their training data. Some use cases require:\n\nAccess to private or proprietary information\nReal-time or frequently updated data\nDomain-specific knowledge\nCompany-specific policies and procedures\n\nBy incorporating a retrieval system, RAG enables LLMs to access and leverage this additional context when generating responses, making them more accurate and useful for specialized applications.",
+    "crumbs": [
+      "Retrieval Augmented Generation (RAG)"
+    ]
+  },
+  {
+    "objectID": "rag.html#how-rag-works",
+    "href": "rag.html#how-rag-works",
+    "title": "Retrieval Augmented Generation (RAG)",
+    "section": "How RAG Works",
+    "text": "How RAG Works\nThe example of use case of RAG is to query a database using natural language. We can give a prompt to the LLM to query the database and the LLM will generate the SQL query to get the data.\n\nRAG System Flowchart\n\nThis is the flowchart of RAG system for natural language database querying:\n\n\n\n\n\n\n\n\nRAG works in detail\n1. Input Processing: - User submits a natural language query - Query is analyzed for intent and key entities - Query is converted to vector embeddings for semantic matching\n2. Retrieval Phase: - Documents/Database schema are pre-processed into chunks - Chunks are converted to embeddings and stored in vector database - System performs semantic search to find relevant context - Retrieves most similar documents/schema information\n3. Augmentation Phase: - Retrieved context is processed and filtered - Original query is reformulated with context - SQL query is generated using the enhanced understanding\n4. Database Interaction: - Generated SQL queries the target database - Results are fetched from the database\n5. Generation Phase: - Combines original query, context, and database results - Generates natural language response - Returns formatted answer to user",
+    "crumbs": [
+      "Retrieval Augmented Generation (RAG)"
+    ]
+  },
+  {
+    "objectID": "rag.html#rag-in-action",
+    "href": "rag.html#rag-in-action",
+    "title": "Retrieval Augmented Generation (RAG)",
+    "section": "RAG In Action",
+    "text": "RAG In Action\n\nSystem Flowchart\n\n\n\n\n\nThe flowchart above illustrates the end-to-end process of our RAG (Retrieval-Augmented Generation) system:\n\nThe process begins with a user’s natural language query, which is converted into an embedding\nIn parallel, the BigQuery schema is also embedded\nThe Model Processing phase includes:\n\nAn LLM that processes both embeddings\nGeneration of SQL queries\nData analysis logic\nVisualization code generation\n\nThe generated SQL query is executed against BigQuery database to fetch results\nThe query results flow into:\n\nData analysis processing\nMatplotlib visualization generation\n\nFinally, both the analysis results and visualizations are combined into a comprehensive response for the user This architecture enables natural language interactions with data while providing both analytical insights and visual representations.\n\n\n\nCode Example\n\n\nCode\nimport matplotlib.pyplot as plt\nimport seaborn as sns\nfrom typing import Union, Tuple\nimport warnings\nimport logging\n\n# Filter out specific warnings and logs\nwarnings.filterwarnings('ignore', category=FutureWarning)\nlogging.getLogger('google.cloud.bigquery').setLevel(logging.ERROR)\nlogging.getLogger('google.api_core').setLevel(logging.ERROR)\n\n# Add BigQuery table variables\n# project_id = \"\"\n# dataset_id = \"\"\n# table_id = \"\"\n\nclass RAGQueryEngine:\n    def __init__(self):\n        \"\"\"Initialize with table schema\"\"\"\n        schema_query = f\"\"\"\n        SELECT \n            column_name, data_type\n        FROM `{project_id}.{dataset_id}.INFORMATION_SCHEMA.COLUMNS` \n        WHERE table_name = '{table_id}'\n        \"\"\"\n        schema_df = bq_client.query(schema_query).to_dataframe()\n        self.schema = schema_df.to_dict('records')\n        \n    def get_sql_query(self, user_question: str) -&gt; str:\n        \"\"\"Generate SQL query from natural language question\"\"\"\n        schema_str = \"\\n\".join([f\"- {col['column_name']}: {col['data_type']}\" for col in self.schema])\n        \n        prompt = f\"\"\"\n        Convert this question to a SQL query for BigQuery:\n        {user_question}\n        \n        Use the table: `{project_id}.{dataset_id}.{table_id}`\n        \n        Table schema:\n        {schema_str}\n        \n        The query should:\n        - Be valid SQL that starts with SELECT\n        - Return relevant data for visualization using the correct columns from the schema\n        - Include date/time fields if asking about trends\n        - Use proper table names and column references\n        - Not include any explanatory text, only the SQL query\n        \"\"\"\n        \n        response = client.chat.completions.create(\n            model=\"gpt-4\",\n            messages=[\n                {\"role\": \"system\", \"content\": \"You are an expert SQL writer. Write only valid BigQuery SQL queries without any explanatory text. Always use fully qualified table names.\"},\n                {\"role\": \"user\", \"content\": prompt}\n            ],\n            temperature=0.3\n        )\n        \n        sql = response.choices[0].message.content.strip()\n        # Ensure query starts with SELECT\n        if not sql.upper().startswith('SELECT'):\n            raise ValueError(\"Invalid SQL query generated\")\n        return sql\n\n    def generate_visualization(self, df, question: str) -&gt; Tuple[str, plt.Figure]:\n        \"\"\"Generate visualization and explanation based on data\"\"\"\n        # Create figure\n        plt.close('all')  # Close all existing figures\n        fig = plt.figure(figsize=(10, 6))\n        ax = fig.add_subplot(111)\n        \n        # For time series data with dates and numeric values, default to line plot\n        if 'transaction_date' in df.columns and 'total_revenue' in df.columns:\n            sns.lineplot(data=df, x='transaction_date', y='total_revenue', ax=ax, marker='o')\n            plt.title('Daily Sales Trend')\n            plt.xlabel('Date')\n            plt.ylabel('Total Revenue')\n            plt.xticks(rotation=45)\n            plt.tight_layout()\n            return self.generate_explanation(df, question), fig\n            \n        # If not a time series, use the AI recommendation approach\n        prompt = f\"\"\"\n        Question: {question}\n        \n        Data columns: {', '.join(df.columns)}\n        Sample data: {df.head().to_string()}\n        \n        What type of plot would best visualize this data? Choose from:\n        1. Line plot (for trends over time)\n        2. Bar plot (for comparisons)\n        3. Scatter plot (for relationships)\n        4. Pie chart (for composition)\n        \n        Provide your recommendation in format:\n        PLOT_TYPE: &lt;type&gt;\n        X_AXIS: &lt;column&gt;\n        Y_AXIS: &lt;column&gt;\n        TITLE: &lt;title&gt;\n        \"\"\"\n        \n        response = client.chat.completions.create(\n            model=\"gpt-4\",\n            messages=[\n                {\"role\": \"system\", \"content\": \"You are a data visualization expert. Recommend the best chart type.\"},\n                {\"role\": \"user\", \"content\": prompt}\n            ],\n            temperature=0.3\n        )\n        \n        viz_specs = response.choices[0].message.content.strip().split('\\n')\n        plot_type = viz_specs[0].split(': ')[1].lower()\n        x_col = viz_specs[1].split(': ')[1]\n        y_col = viz_specs[2].split(': ')[1]\n        title = viz_specs[3].split(': ')[1]\n\n        # Create visualization based on type\n        try:\n            if plot_type == 'line':\n                df = df.sort_values(by=x_col)\n                sns.lineplot(data=df, x=x_col, y=y_col, ax=ax, marker='o')\n            elif plot_type == 'bar':\n                sns.barplot(data=df, x=x_col, y=y_col, ax=ax)\n            elif plot_type == 'scatter':\n                sns.scatterplot(data=df, x=x_col, y=y_col, ax=ax)\n            elif plot_type == 'pie':\n                plt.pie(df[y_col], labels=df[x_col], autopct='%1.1f%%')\n            \n            plt.title(title)\n            if plot_type != 'pie':\n                plt.xticks(rotation=45)\n            plt.tight_layout()\n            \n        except Exception as e:\n            print(\"\\n❌ Error generating visualization:\")\n            print(f\"   {str(e)}\")\n            \n        return self.generate_explanation(df, question), fig\n\n    def generate_explanation(self, df, question: str) -&gt; str:\n        \"\"\"Generate explanation of the visualization\"\"\"\n        explanation_prompt = f\"\"\"\n        Question: {question}\n        \n        Data Results:\n        {df.to_string()}\n        \n        Please provide a clear, concise explanation of the visualization and key insights.\n        \"\"\"\n        \n        explanation = client.chat.completions.create(\n            model=\"gpt-4\",\n            messages=[\n                {\"role\": \"system\", \"content\": \"You are a helpful data analyst. Explain visualizations clearly.\"},\n                {\"role\": \"user\", \"content\": explanation_prompt}\n            ],\n            temperature=0.7\n        )\n        \n        return explanation.choices[0].message.content.strip()\n\n    def query(self, question: str) -&gt; Tuple[str, plt.Figure]:\n        \"\"\"Main method to process natural language query\"\"\"\n        try:\n            # Generate SQL\n            sql_query = self.get_sql_query(question)\n            print(\"\\n📝 Generated SQL Query:\")\n            print(f\"   {sql_query}\")\n            \n            # Execute query\n            query_job = bq_client.query(sql_query)\n            results = query_job.result().to_dataframe()\n            print(\"\\n📊 Query Results Preview:\")\n            print(f\"{results.head().to_string()}\\n\")\n            \n            # Generate visualization and explanation\n            explanation, fig = self.generate_visualization(results, question)\n            \n            return explanation, fig\n            \n        except Exception as e:\n            print(\"\\n❌ Error occurred:\")\n            print(f\"   {str(e)}\")\n            return f\"Error processing query: {str(e)}\", None\n\ndef main(question: str):\n    rag_engine = RAGQueryEngine()\n    print(\"\\n\" + \"=\"*50)\n    print(f\"🔍 Question: {question}\")\n    print(\"=\"*50 + \"\\n\")\n    \n    explanation, fig = rag_engine.query(question)\n    \n    print(\"\\n\" + \"=\"*50)\n    print(\"📈 Analysis:\")\n    print(f\"{explanation}\")\n    print(\"=\"*50)\n    \n    if fig:\n        plt.show()\n\nif __name__ == \"__main__\":\n    main(\"Show me the daily sales trend for the past week?\")\n\n\nI0000 00:00:1735895683.666072 26569273 check_gcp_environment_no_op.cc:29] ALTS: Platforms other than Linux and Windows are not supported\n\n\n\n==================================================\n🔍 Question: Show me the daily sales trend for the past week?\n==================================================\n\n\n📝 Generated SQL Query:\n   SELECT \n  DATE(transaction_datetime) AS transaction_date,\n  SUM(revenue) AS total_revenue\nFROM \n  `sukses-group-398313.playground.captain_transaction_details`\nWHERE \n  DATE(transaction_datetime) BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY) AND CURRENT_DATE()\nGROUP BY \n  transaction_date\nORDER BY \n  transaction_date ASC\n\n\nI0000 00:00:1735895691.762848 26569273 check_gcp_environment_no_op.cc:29] ALTS: Platforms other than Linux and Windows are not supported\n\n\n\n📊 Query Results Preview:\n  transaction_date  total_revenue\n0       2024-12-27      797630000\n1       2024-12-28      868785000\n2       2024-12-29      959685000\n3       2024-12-30      843480000\n4       2024-12-31      726495000\n\n\n==================================================\n📈 Analysis:\nVisualization Explanation:\n\nIn this example, the visualization would be a line graph showing daily sales over the past week. On the x-axis, we have the transaction date, and on the y-axis, we have the total revenue for each day. Each point on the graph represents the total revenue for a specific day, and these points are connected by a line to show the trend over time.\n\nKey Insights:\n\n1. The sales revenue is not constant and varies from day to day. \n2. There is a significant increase in total revenue from 27th to 29th of December, peaking at 959,685,000.\n3. The revenue then drops on 30th and 31st of December, with the lowest point of the week at 726,495,000 on the 31st.\n4. However, the revenue bounces back up on 2nd January, reaching 950,505,000, nearly returning to the peak level of the week.\n\nBy observing this trend, we can identify patterns in sales and use this data to predict future sales trends. The dips and peaks might be associated with specific events or promotions, suggesting areas for further investigation. For instance, we might want to find out why sales dipped towards the end of December and what caused them to recover in early January.\n==================================================",
+    "crumbs": [
+      "Retrieval Augmented Generation (RAG)"
+    ]
+  },
+  {
+    "objectID": "rag.html#closing",
+    "href": "rag.html#closing",
+    "title": "Retrieval Augmented Generation (RAG)",
+    "section": "Closing",
+    "text": "Closing\nThis example demonstrates the power of RAG (Retrieval Augmented Generation) in creating intelligent data analysis systems. By combining natural language processing, SQL generation, and automated visualization, RAG enables non-technical users to gain valuable insights from complex datasets through simple conversational queries.",
+    "crumbs": [
+      "Retrieval Augmented Generation (RAG)"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Welcome to dimasmufid.com",
+    "section": "",
+    "text": "Hi! I’m Dimas Mufid, a Machine Learning Engineer based in Indonesia. This blog serves as a platform where I share my professional journey and learning experiences in the technology industry. My goal is to provide valuable insights and knowledge that can benefit others in their careers.",
+    "crumbs": [
+      "Welcome to dimasmufid.com"
+    ]
+  },
+  {
+    "objectID": "index.html#about-this-blog",
+    "href": "index.html#about-this-blog",
+    "title": "Welcome to dimasmufid.com",
+    "section": "About This Blog",
+    "text": "About This Blog\nThis is my personal blog where I document and share my experiences in:\n\nMachine Learning: Implementation strategies, model development, and practical applications\nAI Engineering: Building and deploying AI systems at scale\nData Engineering: Best practices and techniques for data infrastructure\nTechnical Insights: Lessons learned and solutions from real-world projects\n\nFeel free to explore the articles and reach out if you have any questions or feedback. I hope you find the content helpful in your own professional journey!",
+    "crumbs": [
+      "Welcome to dimasmufid.com"
+    ]
+  }
+]
