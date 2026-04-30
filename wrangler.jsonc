@@ -1,8 +1,20 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "dimasmufid-com",
+  "main": "./src/worker.ts",
   "compatibility_date": "2026-04-30",
   "assets": {
+    "binding": "ASSETS",
     "directory": "./dist"
-  }
+  },
+  "routes": [
+    {
+      "pattern": "www.dimasmufid.com/*",
+      "zone_name": "dimasmufid.com"
+    },
+    {
+      "pattern": "dimasmufid.com/*",
+      "zone_name": "dimasmufid.com"
+    }
+  ]
 }
