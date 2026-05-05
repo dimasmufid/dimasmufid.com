@@ -8,208 +8,30 @@ tags:
 
 ## Background
 
-This is my first day on building fastapi backend service for mark, after initially build the directory yesterday. As a data engineer and data scientist, I already have experience in python, but this is my very first time build a backend apps using fastai. Therefore it is challenging. Fortunately, there is AI which can accompany and guide me to build it.
+This is my first day building the FastAPI backend service for Mark, after setting up the initial directory yesterday. As a data engineer and data scientist, I already have experience with Python, but this is my first time building a backend application with FastAPI. That makes the work challenging, but also exciting, because I can use AI as a partner while I learn the backend side more deeply.
 
 ## The Process I have done
 
-### To do list
+### Turning the backend plan into a product shape
 
-At first, I define the to do list to plan out the step to build the backend process. Here are the overall to do list that I need to do. In addition, I also have crosscheck the task that I already done today.
+Before writing too much code, I needed to make the backend roadmap clearer. Mark is not only a normal CRUD backend. The product that I want to build is closer to a conversational data analyst: the user asks a question, Mark understands the request, decides whether it needs code execution, runs the code safely, and then returns the result in a useful explanation.
 
-```md
-## Mark - Backend To-Do List
+That means the backend has several responsibilities that must work together. The first foundation is the regular application layer: user signup, signin, JWT authentication, chat sessions, message history, and PostgreSQL persistence through SQLModel and Alembic. This part is already mostly done. It is not the most exciting part of the product, but it is important because every conversation needs an owner, a session, and a history that can be reused as context.
 
-### Core Architectural Shift: LLM-Powered Conversational Agent with Code Execution Tools
+The second part is the LLM interaction service. This will become the "brain" of Mark. It needs to read the user's question and the previous chat context, then decide whether the answer can be written directly or whether Mark needs to generate Python code. If code is needed, the model should generate the code, wait for execution results, and then turn those results back into a readable answer for the user. The important thing here is that code execution should feel like an internal tool, not something the user needs to manage manually.
 
-Mark will function as an intelligent conversational agent. It will understand user queries, engage in dialogue, and decide when to leverage its specialized tool: generating and executing Python code (e.g., for data analysis, BigQuery interaction, visualization). The goal is a seamless chat experience where code execution happens behind the scenes when necessary.
+The third part is data context. Since Mark is intended to help with data analysis, the LLM needs to know what data is available before it can generate useful queries. For BigQuery, that means preparing table metadata, column descriptions, and other context that can guide the model when writing SQL or Python. Without this layer, the LLM might write code that looks correct but points to the wrong table or uses columns that do not exist.
 
-### Phase 0: Foundational Setup (Completed)
+The final part is orchestration through the main chat API. This endpoint will receive the user's message, load the chat history, call the LLM service, execute Python when needed, pass the execution result back to the LLM, save the final response, and return a clean answer to the frontend. In other words, the chat endpoint becomes the conductor. It should hide the complexity behind one simple user experience.
 
-- [x] App State Database - Plain PostgreSQL with SQLModel & Alembic (Setup and initial schema)
-
-- [x] Basic FastAPI app structure.
-
-### Phase 1: Core Backend for LLM-Powered Agent
-
-#### 1.0. User Authentication & Session Management (NEW)
-
-- [x] **API Endpoints:** (DONE)
-
-- [x] `POST /auth/signup`: Create a new user (store in `User` table using `app_state_models.py`).
-
-- [x] `POST /auth/signin`: Authenticate user, return JWT token.
-
-- [x] **Token-based Authentication:** (DONE)
-
-- [x] FastAPI dependency (e.g., using `fastapi.security.OAuth2PasswordBearer`) to protect chat-related endpoints, requiring a valid JWT.
-
-- [x] Logic to extract user identity from the token for associating chats and messages.
-
-- [x] **Password Hashing:** Implement secure password storage (e.g., using `passlib`) and verification. (DONE - part of initial auth setup)
-
-#### 1.0.B. Chat Lifecycle & Persistence (NEW)
-
-- [x] **Chat Creation & Identification:** (DONE)
-
-- [x] Logic within the main chat endpoint (or a dedicated `/chat/session` endpoint) to create a new `Chat` record (linked to the authenticated `user_id`) if no `chat_id` is provided or if a new session is explicitly requested.
-
-- [x] The chat endpoint will need to accept an optional `chat_id` to continue existing conversations.
-
-- [x] **Message Persistence:** (DONE)
-
-- [x] Service/functions to save incoming user messages and Mark's responses to the `Message` table (from `app_state_models.py`), associated with the correct `chat_id`. This includes `role`, `parts` (content), `attachments`, and `query_details` as applicable.
-
-- [x] **History Retrieval Service:** (DONE)
-
-- [x] A service function (e.g., `get_chat_history(chat_id: UUID) -> List[Message]`) to fetch historical messages for a given `chat_id`. This will be used to provide conversation context to the LLM.
-
-- [x] **SQLModel Integration:** Ensure all database interactions strictly use the SQLModel definitions in `app/models/app_state_models.py`. (DONE)
-
-#### 1.1. LLM Interaction Service (The "Brain" of the Chatbot)
-
-- [ ] **Design and implement a service to manage all LLM interactions, enabling Mark to act as a capable chatbot with tool-using abilities.**
-
-- [ ] **Reasoning & Decision-Making Engine (Chain of Thought):** LLM analyzes the user query and **retrieved database conversation context** to:
-
-- [ ] Determine the user's intent.
-
-- [ ] Decide if the query can be answered directly (e.g., conversational response, general knowledge) OR if it requires using the Python code execution tool.
-
-- [ ] If a direct answer is best, LLM generates that textual response.
-
-- [ ] If code execution is needed, LLM identifies the steps and data required, then proceeds to generate the necessary Python code.
-
-- [ ] **Prompt Engineering & Management for a Multi-faceted Agent:**
-
-- [ ] System prompts defining Mark's persona, its capabilities (including tool usage), and its goal to be helpful and conversational.
-
-- [ ] Prompts for the reasoning/decision-making step (now including how to use retrieved conversation history).
-
-- [ ] Prompts for generating Python code for data tasks (BigQuery, transformations, plotting).
-
-- [ ] Prompts for generating user-facing textual responses (direct answers or synthesizing information after tool use).
-
-- [ ] **LLM Communication:** Sending requests to the LLM and processing its responses (which could be direct text, a decision to use a tool, or Python code).
-
-- [ ] Configuration for LLM API keys and model selection (via `app.core.config`).
-
-#### 1.2. Secure Python Code Execution Engine (Daytona-based Tool)
-
-- [x] **Sandboxing Mechanism:** Daytona chosen and successfully integrated for sandboxing Python code execution.
-
-- [x] **Execution Service (`CodeExecutionService`):**
-
-- [x] Takes a Python code string and executes it in a Daytona sandbox.
-
-- [x] Captures `stdout` and `stderr`.
-
-- [x] Handles execution errors.
-
-- [x] **Sandbox Environment:** Daytona image (`harbor-transient.internal.daytona.app/daytona/mark-plotly:0.0.1`) provides necessary libraries. (Ongoing maintenance/updates as needed).
-
-#### 1.3. BigQuery Table Metadata Management (Context for LLM Reasoning & Code Gen)
-
-- [ ] **Design Metadata Storage/Access:**
-
-- [ ] Method: JSON files, Pydantic models, or App State DB (e.g., new `DataSourceMetadata` table in `app_state_models.py`).
-
-- [ ] Service to load/access metadata.
-
-- [ ] This metadata is crucial for the LLM's reasoning process (understanding what data it _can_ analyze) and for generating correct Python code for BigQuery.
-
-#### 1.4. Main Chat API Endpoint (`/api/v1/chat`) - Orchestrator
-
-- [ ] **Orchestration of the Conversational Flow:**
-
-- [x] Handle user authentication (e.g., via JWT token dependency). (NEW) (DONE - as part of 1.0)
-
-- [x] Determine chat context: new chat vs. existing chat (using `chat_id` from request body/path or creating a new `Chat` instance). (NEW) (DONE - as part of 1.0.B)
-
-- [x] Retrieve conversation history from the database using the Chat Lifecycle service if an existing `chat_id` is provided. (NEW) (DONE - as part of 1.0.B)
-
-- [ ] Receive user's query.
-
-- [ ] Pass query and **retrieved database conversation context** to `LLMInteractionService`.
-
-- [ ] `LLMInteractionService` returns its reasoned response, which could be:
-
-- [ ] A direct textual answer: Format and return in `MarkResponse`.
-
-- [ ] A decision to generate Python code:
-
-- `LLMInteractionService` generates the code.
-
-- API passes the code to `CodeExecutionService`.
-
-- `CodeExecutionService` executes it and returns results (`stdout`, `stderr`, success).
-
-- **(RAG for Tool Use):** API sends these execution results (and original query/context) back to `LLMInteractionService`.
-
-- `LLMInteractionService` then generates the final, synthesized, story-driven `answer_story` based on the code's output.
-
-- [ ] (Future) Support for multi-step tool usage if the LLM's reasoning determines it's necessary.
-
-- [ ] Format the final `MarkResponse` (story, visualization spec, data snippets) based on the LLM's final output.
-
-- [x] Save user message and Mark's complete response (including story, generated code if any, etc.) to the `Message` table in the database. (NEW) (DONE - as part of 1.0.B)
-
-- [ ] Translate errors from any stage into a user-friendly `MarkResponse.answer_story` (and potentially log errors to the `Message` record or a separate error log).
-
-#### 1.5. Initial Supported Tooling Capabilities (Python Code Generation Tasks for MVP)
-
-- [ ] **BigQuery Interaction:**
-
-- [ ] LLM generates Python to query BigQuery (SQL might also be LLM-generated).
-
-- [ ] Code returns data (e.g., as CSV/JSON to `stdout`).
-
-- [ ] **Plotly Visualization Generation:**
-
-- [ ] LLM generates Python to create Plotly JSON specs from data (printed to `stdout` or saved for artifact retrieval).
-
-- [ ] **(New) Data Attachment Processing:**
-
-- [ ] User uploads file; LLM generates code to process it.
-
-- [ ] Secure file handling required.
-
-### Phase 2: Enhancements & Refinements
-
-#### 2.1. Advanced LLM Reasoning & Conversational Context
-
-- [ ] Iteratively refine prompts for more sophisticated reasoning, decision-making, code quality, RAG summarization, and security.
-
-- [ ] Robust conversation history management to provide richer context to the LLM.
-
-#### 2.2. Expanding Toolset & Code Generation
-
-- [ ] More complex data transformations via Python.
-
-- [ ] Additional Python libraries in sandbox.
-
-- [ ] Artifact retrieval from sandbox (images, files).
-
-#### 2.3. Security Hardening & Auditing
-
-- [ ] Ongoing review of sandboxing and LLM interaction patterns.
-
-- [ ] Auditing generated code and LLM decisions.
-
-#### 2.4. User Feedback & Learning
-
-- [ ] Mechanisms for users to provide feedback on Mark's responses and tool usage.
-
-### Phase 3: Production Readiness
-
-- [ ] Standard items: Enhanced Error Handling, API Security, Testing, Documentation, Scalability.
-```
+For the MVP, I want Mark to support three core tool behaviors first: querying BigQuery, transforming data with Python, and generating Plotly visualizations. After that, I can improve the prompts, add better error handling, support uploaded files, and keep hardening the sandbox security.
 
 ### Julius AI
 
 The first thing I need to try is the **code generator**. To assess whether it is feasible to do or not. I strongly believe it is feasible because there is already real software which could do that. For instance, I inspire a lot from [julius.ai](https://julius.ai/). It is an AI to help data analyst working on data analysis and data manipulation.
-![](./Pasted image 20250521061007.png)
+![Julius AI data analysis interface](./julius-ai-data-analysis.png)
 This is how they could generate python code, run it, and return the result also in the UI.
-![](./Pasted image 20250521061221.png)
+![Julius AI generated Python code result](./julius-ai-python-code-result.png)
 So it must be feasible. But I need to try it first, to define how challenging it is and how much cost is it, whether it is cost for development and also cost for running it.
 
 ### Sandbox
@@ -284,10 +106,10 @@ After I doing my research, apparently the term for separated and isolated comput
 - **Monitoring and Logging:** Keep track of what code is being executed and its behavior.
 ```
 
-Apparently it is challenging to do it, and very sensitives in term of security. After wondering what is the best, I remember about the [Suna](https://github.com/kortix-ai/suna) project that I previously learned. They surely also use sandbox for the agent to do it's work. Apparently, they use third party service to run the sandbox, called [Daytona](https://www.daytona.io/) which they called as _"Secure agent execution environment"_.
-![](./Pasted image 20250521062308.png)
+Apparently it is challenging to do it, and very sensitive in terms of security. After thinking about the best approach, I remembered the [Suna](https://github.com/kortix-ai/suna) project that I previously studied. Suna also needs a sandbox so its agent can do real work without exposing the main application environment. They use a third-party service called [Daytona](https://www.daytona.io/), which describes itself as a _"Secure agent execution environment"_.
+![Daytona secure agent execution environment](./daytona-secure-agent-execution-environment.png)
 Moreover, for the isolated sandbox environment that we are going to build, we can customized the image.
-![](./Pasted image 20250521062521.png)
+![Daytona custom sandbox image configuration](./daytona-custom-sandbox-image.png)
 
 ## Closing
 
