@@ -6,6 +6,8 @@ import ArrowCard from "@components/ArrowCard.astro";
 import Link from "@components/Link.astro";
 import { SITE, HOME, SOCIALS } from "@consts";
 
+const xSocial = SOCIALS.find((s) => s.NAME === "x")!;
+
 const blog = (await getCollection("blog"))
   .filter(post => !post.data.draft)
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
@@ -30,7 +32,7 @@ const projects = (await getCollection("projects"))
 <PageLayout title={HOME.TITLE} description={HOME.DESCRIPTION}>
   <Container>
     <h4 class="animate font-semibold text-black dark:text-white">
-      Hi, I'm Dimas <span class="text-xl">👋🏻</span> 
+      Hi, I'm Mufid <span class="text-xl">👋🏻</span> 
     </h4>
     <div class="space-y-16">
       <section>
@@ -89,9 +91,8 @@ const projects = (await getCollection("projects"))
         </h5>
         <article>
           <p>
-            If you want to get in touch with me about something or just to say hi,
-            reach out on social media or send me an email.
-          </p>
+          If you want to get in touch with me, reach out on <Link href={xSocial.HREF} external aria-label={`${SITE.NAME} on ${xSocial.NAME}`}><span class="italic">x</span></Link> or send me an email.
+        </p>
         </article>
         <ul class="flex flex-wrap gap-2">
           {SOCIALS.map(SOCIAL => (
