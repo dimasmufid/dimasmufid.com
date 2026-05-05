@@ -2,7 +2,7 @@
 title: "Nesra"
 description: "Nesra, a technology enabler for Indonesian businesses through software, data, and practical AI"
 date: "2026-05-05"
-featured: true
+featured: false
 demoURL: "https://www.nesra.ai/"
 demoImage: "/project-heroes/nesra-hero.png"
 ---
