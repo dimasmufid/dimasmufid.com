@@ -40,7 +40,6 @@ Therefore, I start to research on how to do it. At first, I need to have an LLM 
 
 After I doing my research, apparently the term for separated and isolated compute to which can run service as we need is called **Sandbox**. This is what are the alternatives on achieve it, which absolutely have their own pros and cons for each.
 
-```md
 #### Common Sandboxing Techniques & Considerations:
 
 1. **Custom Python Interpreters/Executors:**
@@ -104,7 +103,6 @@ After I doing my research, apparently the term for separated and isolated comput
 - **Fuzz Testing:** Test the sandbox with randomly generated code to find vulnerabilities (Moveworks).
 
 - **Monitoring and Logging:** Keep track of what code is being executed and its behavior.
-```
 
 Apparently it is challenging to do it, and very sensitive in terms of security. After thinking about the best approach, I remembered the [Suna](https://github.com/kortix-ai/suna) project that I previously studied. Suna also needs a sandbox so its agent can do real work without exposing the main application environment. They use a third-party service called [Daytona](https://www.daytona.io/), which describes itself as a _"Secure agent execution environment"_.
 ![Daytona secure agent execution environment](./daytona-secure-agent-execution-environment.png)
