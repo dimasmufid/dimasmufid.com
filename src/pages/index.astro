@@ -10,6 +10,7 @@ const xSocial = SOCIALS.find((s) => s.NAME === "x")!;
 
 const blog = (await getCollection("blog"))
   .filter(post => !post.data.draft)
+  .filter(post => !post.data.tags?.includes(SITE.BLOG_EXCLUDED_TAG))
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
   .slice(0,SITE.NUM_POSTS_ON_HOMEPAGE);
 
@@ -38,13 +39,14 @@ const projects = (await getCollection("projects"))
       <section>
         <article class="space-y-4">
           <p class="animate">
+            Founder of Entrefine, an omnichannel platform for Indonesian businesses.
             I'm an engineer who loves building systems — in data, AI, and software.
           </p>
           <p class="animate">
-            I write to document what I'm learning along the way: designing architectures, shipping products, experimenting with ideas, and building things from scratch.
+            Before this I spent four years as a data engineer, software engineer, and product manager. I build end-to-end, from architecture decisions to shipping product.
           </p>
           <p class="animate">
-            This blog is my place to think in public, share my process, and grow through doing.
+            This site is where I document what I'm learning along the way.
           </p>
         </article>
       </section>

@@ -3,10 +3,11 @@ import { type CollectionEntry, getCollection } from "astro:content";
 import PageLayout from "@layouts/PageLayout.astro";
 import Container from "@components/Container.astro";
 import ArrowCard from "@components/ArrowCard.astro";
-import { BLOG } from "@consts";
+import { BLOG, SITE } from "@consts";
 
 const data = (await getCollection("blog"))
   .filter(post => !post.data.draft)
+  .filter(post => !post.data.tags?.includes(SITE.BLOG_EXCLUDED_TAG))
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
   
 type MonthPosts = {

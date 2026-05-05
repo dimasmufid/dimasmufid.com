@@ -5,6 +5,7 @@ export const SITE: Site = {
   EMAIL: "dimasmoveit@gmail.com",
   NUM_POSTS_ON_HOMEPAGE: 3,
   NUM_PROJECTS_ON_HOMEPAGE: 3,
+  BLOG_EXCLUDED_TAG: "reflection",
 };
 
 export const HOME: Metadata = {
