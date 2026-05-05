@@ -4,7 +4,7 @@ export const SITE: Site = {
   NAME: "Dimas Mufid",
   EMAIL: "dimasmoveit@gmail.com",
   NUM_POSTS_ON_HOMEPAGE: 3,
-  NUM_PROJECTS_ON_HOMEPAGE: 1,
+  NUM_PROJECTS_ON_HOMEPAGE: 3,
 };
 
 export const HOME: Metadata = {
@@ -32,7 +32,7 @@ export const ABOUT: Metadata = {
 
 export const SOCIALS: Socials = [
   {
-    NAME: "twitter-x",
+    NAME: "x",
     HREF: "https://x.com/dimasmufid",
   },
   {

@@ -11,9 +11,18 @@ const blog = (await getCollection("blog"))
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
   .slice(0,SITE.NUM_POSTS_ON_HOMEPAGE);
 
+const homepageProjectOrder = ["omnichannel", "learning-platform", "nesra"];
+const homepageProjectRank = (slug: string) => {
+  const rank = homepageProjectOrder.indexOf(slug);
+  return rank === -1 ? homepageProjectOrder.length : rank;
+};
+
 const projects = (await getCollection("projects"))
   .filter(project => !project.data.draft)
-  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .filter(project => project.data.featured)
+  .sort((a, b) =>
+    homepageProjectRank(a.slug) - homepageProjectRank(b.slug)
+  )
   .slice(0,SITE.NUM_PROJECTS_ON_HOMEPAGE);
 
 ---

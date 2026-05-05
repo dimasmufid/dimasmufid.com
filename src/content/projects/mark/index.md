@@ -2,6 +2,8 @@
 title: "Mark, an AI Business Analyst"
 description: "Mark, an AI Business Analyst that can become your 24/7 assistant"
 date: "2025-08-12"
+featured: false
+archieve: true
 # demoURL: "https://mark.dimas.ai"
 # repoURL: "https://github.com/dimas-ai/mark"
 ---
