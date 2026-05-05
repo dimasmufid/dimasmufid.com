@@ -4,6 +4,7 @@ description: "Nesra, a technology enabler for Indonesian businesses through soft
 date: "2026-05-05"
 featured: true
 demoURL: "https://www.nesra.ai/"
+demoImage: "/project-heroes/nesra-hero.png"
 ---
 
 # Why I Started Nesra

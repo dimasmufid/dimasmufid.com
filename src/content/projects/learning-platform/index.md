@@ -4,6 +4,7 @@ description: "Learning Platform, Entrefine's own system for delivering Excel cou
 date: "2026-05-05"
 featured: true
 demoURL: "https://learn.entrefine.com/"
+demoImage: "/project-heroes/learning-platform-hero.png"
 ---
 
 # Why I Started Learning Platform

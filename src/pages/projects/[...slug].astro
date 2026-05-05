@@ -19,6 +19,7 @@ export async function getStaticPaths() {
 type Props = CollectionEntry<"projects">;
 
 const project = Astro.props;
+const hasDemoImage = Boolean(project.data.demoURL && project.data.demoImage);
 const { Content } = await project.render();
 ---
 
@@ -42,14 +43,14 @@ const { Content } = await project.render();
       <div class="animate text-2xl font-semibold text-black dark:text-white">
         {project.data.title}
       </div>
-      {(project.data.demoURL || project.data.repoURL) && (
+      {((project.data.demoURL && !hasDemoImage) || project.data.repoURL) && (
         <nav class="animate flex gap-1">
-          {project.data.demoURL && (
+          {project.data.demoURL && !hasDemoImage && (
             <Link href={project.data.demoURL} external>
               demo
             </Link>
           )}
-          {project.data.demoURL && project.data.repoURL && (
+          {project.data.demoURL && !hasDemoImage && project.data.repoURL && (
             <span>/</span>
           )}
           {project.data.repoURL && (
@@ -58,6 +59,24 @@ const { Content } = await project.render();
             </Link>
           )}
         </nav>
+      )}
+      {hasDemoImage && (
+        <a
+          href={project.data.demoURL}
+          target="_blank"
+          rel="noreferrer"
+          aria-label={`Open ${project.data.title} demo in a new tab`}
+          class="animate group mt-6 block overflow-hidden rounded-lg border border-black/10 bg-black/5 transition-colors duration-300 ease-in-out hover:border-black/20 dark:border-white/10 dark:bg-white/5 hover:dark:border-white/20"
+        >
+          <img
+            src={project.data.demoImage}
+            alt={`${project.data.title} demo homepage screenshot`}
+            width="1440"
+            height="900"
+            loading="eager"
+            class="aspect-[16/10] w-full object-cover object-top transition-transform duration-300 ease-in-out group-hover:scale-[1.01]"
+          />
+        </a>
       )}
     </div>
     <article class="animate">

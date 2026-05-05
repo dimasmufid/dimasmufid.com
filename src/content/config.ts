@@ -20,6 +20,7 @@ const projects = defineCollection({
     featured: z.boolean(),
     archieve: z.boolean().default(false),
     demoURL: z.string().optional(),
+    demoImage: z.string().optional(),
     repoURL: z.string().optional()
   }),
 });

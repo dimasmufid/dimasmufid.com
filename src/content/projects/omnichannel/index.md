@@ -4,6 +4,7 @@ description: "Omnichannel, a finance-focused marketplace reconciliation system f
 date: "2026-05-05"
 featured: true
 demoURL: "https://omnichannel.entrefine.com/"
+demoImage: "/project-heroes/omnichannel-hero.png"
 ---
 
 # Why I Started Omnichannel
