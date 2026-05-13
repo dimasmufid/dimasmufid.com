@@ -2,7 +2,7 @@
 title: "Learning Platform"
 description: "Learning Platform, Entrefine's own system for delivering Excel courses online"
 date: "2026-05-05"
-featured: true
+featured: false
 demoURL: "https://learn.entrefine.com/"
 demoImage: "/project-heroes/learning-platform-hero.png"
 ---
